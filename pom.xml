@@ -116,11 +116,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.restdocs</groupId>
-			<artifactId>spring-restdocs-asciidoctor</artifactId>
-			<!--<scope>test</scope>-->
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
@@ -197,6 +192,71 @@
 
 	<build>
 		<plugins>
+			<!--
+				TESTING
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<includes>
+						<include>**/*Test.java</include>
+						<include>**/*IT.java</include>
+						<include>**/*UT.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+
+			<!--
+				STATIC CODE ANALYZES
+			-->
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>8.4.0</version>
+				<inherited>false</inherited>
+				<configuration>
+					<skip>false</skip>
+					<ossindexAnalyzerEnabled>true</ossindexAnalyzerEnabled>
+					<failBuildOnCVSS>8</failBuildOnCVSS>
+					<skipSystemScope>true</skipSystemScope>
+					<skipTestScope>true</skipTestScope>
+					<skipDependencyManagement>false</skipDependencyManagement>
+					<assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+					<suppressionFile>${basedir}/.config/dependency-check/suppressionFile.xml</suppressionFile>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!--
+				DYNAMIC CODE ANALYZES
+			-->
+			<plugin>
+				<!-- https://www.baeldung.com/jacoco -->
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.10</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<!--
 				DOCUMENTATION

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- Ref: https://jeremylong.github.io/DependencyCheck/general/suppression.html -->
+
+
+    <suppress until="2023-03-01Z">
+        <notes><![CDATA[
+   file name: spring-tx-5.3.23.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-tx@.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
+        <!-- NOTE: the vendor's position is that untrusted data is not an intended use case. The product's behavior will not be changed because some users rely on deserialization of trusted data.  -->
+    </suppress>
+
+    <!-- d4u-fileimporter related dependencies
+     NOTE: Fileimporter will be removed in the near future, is not exposed to external traffic.
+     -->
+
+</suppressions>
