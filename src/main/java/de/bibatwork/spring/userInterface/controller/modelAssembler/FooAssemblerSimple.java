@@ -9,6 +9,12 @@ import org.springframework.hateoas.SimpleIdentifiableRepresentationModelAssemble
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
+/*
+Ref.:
+    - https://spring.io/guides/gs/rest-hateoas/
+    - https://github.com/spring-projects/spring-hateoas-examples/tree/main/hypermedia/src/main/java/org/springframework/hateoas/examples
+    - https://github.com/spring-projects/spring-hateoas-examples/blob/c100c56982473c60e8042f14e6052333a3ae1b55/commons/src/main/java/org/springframework/hateoas/SimpleIdentifiableRepresentationModelAssembler.java
+ */
 public class FooAssemblerSimple extends SimpleIdentifiableRepresentationModelAssembler<Foo> {
 
     FooAssemblerSimple(){

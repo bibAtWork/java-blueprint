@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/*
+Ref.:
+        - https://github.com/BerkleyTechnologyServices/restdocs-spec-example
+*/
 @Component
 public class FooAssembler extends RepresentationModelAssemblerSupport<Foo, FooModel> {
 
