@@ -2,14 +2,15 @@ package de.bibatwork.spring.userInterface.controller;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import java.util.List;
 import java.util.Optional;
 
+import de.bibatwork.spring.application.model.FooModel;
 import de.bibatwork.spring.domain.entity.Foo;
 import de.bibatwork.spring.persistence.repository.FooRepository;
+import de.bibatwork.spring.userInterface.controller.modelAssembler.FooAssembler;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,23 +27,34 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/foo")
 public class FooController {
     //https://www.baeldung.com/spring-rest-docs-vs-openapi
-    @Autowired
-    FooRepository repository;
+
+    private final FooRepository repository;
+
+    private final FooAssembler resourceAssembler;
+
+
+    public FooController(FooRepository repository, FooAssembler resourceAssembler){
+        this.repository = repository;
+        this.resourceAssembler = resourceAssembler;
+    }
+
 
     @GetMapping
-    public ResponseEntity<List<Foo>> getAllFoos() {
-        List<Foo> fooList = (List<Foo>) repository.findAll();
-        if (fooList.isEmpty()) {
+    public ResponseEntity<CollectionModel<FooModel>> getAllFoos() {
+        CollectionModel<FooModel> resources =
+                resourceAssembler.toCollectionModel(repository.findAll());
+
+        if (resources.getContent().isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(fooList, HttpStatus.OK);
+        return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     @GetMapping(value = "{id}")
-    public ResponseEntity<Foo> getFooById(@PathVariable("id") Long id) {
+    public ResponseEntity<FooModel> getFooById(@PathVariable("id") Long id) {
 
         Optional<Foo> foo = repository.findById(id);
-        return foo.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+        return foo.map(value -> new ResponseEntity<>(resourceAssembler.toModel(value), HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 

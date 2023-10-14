@@ -3,13 +3,16 @@ package de.bibatwork.spring.userInterface.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.bibatwork.spring.domain.entity.Foo;
 import de.bibatwork.spring.persistence.repository.FooRepository;
+import de.bibatwork.spring.userInterface.controller.modelAssembler.FooAssembler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.restdocs.RestDocumentationContextProvider;
@@ -28,7 +31,11 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.document;
+import static com.epages.restdocs.apispec.MockMvcRestDocumentationWrapper.resourceDetails;
+//import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -37,9 +44,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -47,11 +52,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.util.StringUtils.collectionToDelimitedString;
 
 @ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
-@WebMvcTest(FooController.class)
-@AutoConfigureRestDocs(outputDir = "target/generated-snippets")
-//@SpringBootTest
-//@SpringBootTest(classes = SpringTemplateApplication.class)
+@WebMvcTest
 @AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureRestDocs(outputDir = "target/generated-snippets")
 public class FooControllerIT {
 
     @Autowired
@@ -62,6 +65,9 @@ public class FooControllerIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockBean(answer = Answers.CALLS_REAL_METHODS)
+    private FooAssembler resourceAssembler;
 
 
     @BeforeEach
@@ -79,7 +85,7 @@ public class FooControllerIT {
     @Test
     void whenGetAllFoo_thenSuccessful() throws Exception {
         when(fooRepository.findAll())
-                .thenReturn(singletonList(new Foo(1, "Foo 1", "Foo 1")));
+                .thenReturn(singletonList(new Foo(1L, "Foo 1", "Foo 1")));
 
         this.mockMvc.perform(get("/foo"))
                 .andExpect(status().isOk())
@@ -92,14 +98,27 @@ public class FooControllerIT {
         ConstraintDescriptions desc = new ConstraintDescriptions(Foo.class);
 
         when(fooRepository.findById(1L))
-                .thenReturn(Optional.of(new Foo(1, "title", "body")));
+                .thenReturn(Optional.of(new Foo(1L, "title", "body")));
 
         this.mockMvc.perform(get("/foo/{id}", 1))
                 .andExpect(status().isOk())
-                .andDo(document("getAFoo", preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()),
-                        pathParameters(parameterWithName("id").description("id of foo to be searched")),
-                        responseFields(fieldWithPath("id").description("The id of the foo" + collectionToDelimitedString(desc.descriptionsForProperty("id"), ". ")),
-                                fieldWithPath("title").description("The title of the foo"), fieldWithPath("body").description("The body of the foo"))));
+                .andDo(document("getAFoo",
+                        resourceDetails()
+                                .description("Get a Foo by id.")
+                                .tags(new String[]{"tag1", "tag2"}),
+                        pathParameters(
+                                parameterWithName("id").description("id of foo to be searched")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("The id of the foo" + collectionToDelimitedString(desc.descriptionsForProperty("id"), ". ")),
+                                fieldWithPath("title").description("The title of the foo"), fieldWithPath("body").description("The body of the foo"),
+                                subsectionWithPath("_links").ignored()
+                        ),
+                        links(
+                                linkWithRel("self").description("Link to the Foo.")
+                        )
+                        )
+                );
     }
 
     @Test
@@ -128,7 +147,7 @@ public class FooControllerIT {
 
         when(fooRepository.existsById(3L)).thenReturn(true);
         when(fooRepository.save(any(Foo.class)))
-                .thenReturn(new Foo(3, "Updated Foo", "Body of updated Foo"));
+                .thenReturn(new Foo(3L, "Updated Foo", "Body of updated Foo"));
 
         ConstraintDescriptions desc = new ConstraintDescriptions(Foo.class);
 
