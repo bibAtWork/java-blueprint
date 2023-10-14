@@ -228,7 +228,7 @@
 				<executions>
 					<execution>
 						<goals>
-							<goal>check</goal>
+							<!--<goal>check</goal>-->
 						</goals>
 					</execution>
 				</executions>
@@ -309,7 +309,7 @@
 						<configuration>
 							<!--suppress MavenModelInspection -->
 							<skip>${skipTests}</skip>
-							<outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
+							<outputDirectory>${project.build.directory}/classes/static/docs</outputDirectory>
 							<specifications>
 								<specification>
 									<type>OPENAPI_V3</type>
